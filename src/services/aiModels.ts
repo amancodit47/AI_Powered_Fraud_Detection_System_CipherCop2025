@@ -3,11 +3,14 @@ import { HfInference } from '@huggingface/inference';
 import OpenAI from 'openai';
 
 // Initialize AI services
-const hf = new HfInference(import.meta.env.VITE_HUGGINGFACE_API_KEY);
-const openai = new OpenAI({
-  apiKey: import.meta.env.VITE_OPENAI_API_KEY,
-  dangerouslyAllowBrowser: true
-});
+const hf = import.meta.env.VITE_HUGGINGFACE_API_KEY ? 
+  new HfInference(import.meta.env.VITE_HUGGINGFACE_API_KEY) : null;
+
+const openai = import.meta.env.VITE_OPENAI_API_KEY ? 
+  new OpenAI({
+    apiKey: import.meta.env.VITE_OPENAI_API_KEY,
+    dangerouslyAllowBrowser: true
+  }) : null;
 
 export interface AIAnalysisResult {
   riskScore: number;
@@ -136,13 +139,15 @@ export class NLPAnalyzer {
       
       // Use Hugging Face for text classification
       const classificationResult = await hf.textClassification({
-        model: 'martin-ha/toxic-comment-model',
-        inputs: text
-      });
-
-      // Detect suspicious patterns
-      const suspiciousPatterns = this.detectSuspiciousPatterns(text);
-      
+      if (hf) {
+        try {
+          classificationResult = await hf.textClassification({
+            model: 'martin-ha/toxic-comment-model',
+            inputs: text
+          });
+        } catch (error) {
+          console.warn('Hugging Face API error, using fallback analysis');
+        }
       // Calculate phishing probability based on multiple factors
       const phishingProbability = this.calculatePhishingProbability(
         text, 

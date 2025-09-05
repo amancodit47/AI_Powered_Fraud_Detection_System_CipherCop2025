@@ -145,7 +145,7 @@ const Dashboard: React.FC = () => {
                     url: threat.url,
                     type: threat.threatType,
                     riskScore: threat.riskScore,
-                    detected: this.formatTimeAgo(threat.timestamp),
+                    detected: formatTimeAgo(threat.timestamp),
                     reasons: [`AI Model Detection: ${threat.threatType}`, `Risk Score: ${threat.riskScore}%`]
                   }} 
                 />
@@ -198,8 +198,8 @@ const Dashboard: React.FC = () => {
       </div>
     </div>
   );
-
-  private formatTimeAgo(timestamp: Date): string {
+  
+  function formatTimeAgo(timestamp: Date): string {
     const now = new Date();
     const diffMs = now.getTime() - timestamp.getTime();
     const diffMins = Math.floor(diffMs / 60000);

@@ -139,6 +139,8 @@ export class NLPAnalyzer {
       
       // Use Hugging Face for text classification
       const classificationResult = await hf.textClassification({
+      }
+      )
       if (hf) {
         try {
           classificationResult = await hf.textClassification({
@@ -148,6 +150,7 @@ export class NLPAnalyzer {
         } catch (error) {
           console.warn('Hugging Face API error, using fallback analysis');
         }
+      }
       // Calculate phishing probability based on multiple factors
       const phishingProbability = this.calculatePhishingProbability(
         text, 

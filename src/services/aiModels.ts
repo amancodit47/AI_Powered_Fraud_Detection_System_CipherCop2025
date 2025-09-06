@@ -182,6 +182,9 @@ export class NLPAnalyzer {
       // Sentiment analysis
       const sentimentResult = analyzeSentiment(text);
       
+      // Detect suspicious patterns
+      const suspiciousPatterns = this.detectSuspiciousPatterns(text);
+      
       // Use Hugging Face for text classification
       let classificationResult;
       

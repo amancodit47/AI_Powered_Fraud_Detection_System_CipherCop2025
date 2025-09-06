@@ -409,10 +409,6 @@ export class VisualAnalyzer {
 
   private async loadModel() {
     try {
-      // Load MobileNet for feature extraction
-      this.model = await tf.loadLayersModel('/models/mobilenet/model.json');
-    } catch (error) {
-      console.error('Error loading visual model:', error);
       // Create a simple CNN for demonstration
       this.model = tf.sequential({
         layers: [
@@ -430,6 +426,8 @@ export class VisualAnalyzer {
           tf.layers.dense({ units: 1, activation: 'sigmoid' })
         ]
       });
+    } catch (error) {
+      console.error('Error loading visual model:', error);
     }
   }
 

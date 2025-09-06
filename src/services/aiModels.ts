@@ -2,6 +2,36 @@ import * as tf from '@tensorflow/tfjs';
 import { HfInference } from '@huggingface/inference';
 import OpenAI from 'openai';
 
+// Simple tokenizer class for browser compatibility
+class SimpleTokenizer {
+  tokenize(text: string): string[] {
+    return text
+      .toLowerCase()
+      .replace(/[^\w\s]/g, ' ')
+      .split(/\s+/)
+      .filter(token => token.length > 0);
+  }
+}
+
+// Simple sentiment analysis function
+function analyzeSentiment(text: string): { score: number; comparative: number } {
+  const positiveWords = ['good', 'great', 'excellent', 'amazing', 'wonderful', 'fantastic', 'love', 'like', 'happy', 'pleased'];
+  const negativeWords = ['bad', 'terrible', 'awful', 'hate', 'dislike', 'angry', 'sad', 'disappointed', 'frustrated', 'annoyed'];
+  
+  const words = text.toLowerCase().split(/\s+/);
+  let score = 0;
+  
+  words.forEach(word => {
+    if (positiveWords.includes(word)) score += 1;
+    if (negativeWords.includes(word)) score -= 1;
+  });
+  
+  return {
+    score,
+    comparative: words.length > 0 ? score / words.length : 0
+  };
+}
+
 // Initialize AI services
 const hf = import.meta.env.VITE_HUGGINGFACE_API_KEY ? 
   new HfInference(import.meta.env.VITE_HUGGINGFACE_API_KEY) : null;
@@ -34,10 +64,10 @@ export interface AIAnalysisResult {
 // Phishing detection model using TensorFlow.js
 class PhishingDetectionModel {
   private model: tf.LayersModel | null = null;
-  private tokenizer: WordTokenizer;
+  private tokenizer: SimpleTokenizer;
 
   constructor() {
-    this.tokenizer = new WordTokenizer();
+    this.tokenizer = new SimpleTokenizer();
     this.loadModel();
   }
 
@@ -103,7 +133,7 @@ class PhishingDetectionModel {
     let brandMentions = 0;
 
     tokens?.forEach(token => {
-      const stemmed = PorterStemmer.stem(token);
+      const stemmed = this.simpleStem(token);
       if (suspiciousKeywords[token] || suspiciousKeywords[stemmed]) {
         suspiciousScore += suspiciousKeywords[token] || suspiciousKeywords[stemmed];
       }
@@ -124,6 +154,21 @@ class PhishingDetectionModel {
     
     return features;
   }
+
+  private simpleStem(word: string): string {
+    // Simple stemming algorithm - removes common suffixes
+    const suffixes = ['ing', 'ed', 'er', 'est', 'ly', 'ion', 'tion', 'ness', 'ment'];
+    let stemmed = word.toLowerCase();
+    
+    for (const suffix of suffixes) {
+      if (stemmed.endsWith(suffix) && stemmed.length > suffix.length + 2) {
+        stemmed = stemmed.slice(0, -suffix.length);
+        break;
+      }
+    }
+    
+    return stemmed;
+  }
 }
 
 // NLP Analysis using Hugging Face models
@@ -135,7 +180,7 @@ export class NLPAnalyzer {
   }> {
     try {
       // Sentiment analysis
-      const sentimentResult = analyze(text);
+      const sentimentResult = analyzeSentiment(text);
       
       // Use Hugging Face for text classification
       let classificationResult;

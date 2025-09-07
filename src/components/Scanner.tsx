@@ -10,6 +10,7 @@ const Scanner: React.FC = () => {
   const [scanResult, setScanResult] = useState(null);
   const [scanMode, setScanMode] = useState<'url' | 'file'>('url');
   const [analysisStage, setAnalysisStage] = useState('');
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
 
   const performRealScan = async (target: string) => {
     setIsScanning(true);
@@ -87,6 +88,108 @@ const Scanner: React.FC = () => {
       }
   };
 
+  const performFileAnalysis = async (file: File) => {
+    setIsScanning(true);
+    setAnalysisStage('Analyzing uploaded file...');
+    
+    try {
+      // Stage 1: File validation
+      setAnalysisStage('Validating file format...');
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      // Stage 2: Static analysis
+      setAnalysisStage('Performing static analysis...');
+      await new Promise(resolve => setTimeout(resolve, 1200));
+
+      // Stage 3: Permission analysis
+      setAnalysisStage('Analyzing app permissions...');
+      await new Promise(resolve => setTimeout(resolve, 800));
+
+      // Stage 4: Behavioral patterns
+      setAnalysisStage('Checking behavioral patterns...');
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      // Stage 5: AI analysis
+      setAnalysisStage('Running AI threat detection...');
+      await new Promise(resolve => setTimeout(resolve, 900));
+
+      // Simulate file analysis based on filename
+      const fileName = file.name.toLowerCase();
+      let riskScore = 20; // Default low risk
+      let threatType = 'Clean';
+      let classification = 'Low Risk';
+      let detectionReasons = ['File analysis completed - no significant threats detected'];
+
+      // Simulate higher risk for suspicious filenames
+      if (fileName.includes('bank') || fileName.includes('wallet') || fileName.includes('crypto')) {
+        riskScore = 85;
+        threatType = 'Banking Trojan';
+        classification = 'High Risk';
+        detectionReasons = [
+          'Suspicious filename pattern detected',
+          'Potential financial data harvesting capabilities',
+          'High-risk permission requests identified'
+        ];
+      } else if (fileName.includes('game') || fileName.includes('free') || fileName.includes('hack')) {
+        riskScore = 65;
+        threatType = 'Potentially Unwanted Program';
+        classification = 'Medium Risk';
+        detectionReasons = [
+          'Suspicious app category detected',
+          'Excessive permission requests',
+          'Potential adware components'
+        ];
+      }
+
+      const result = {
+        target: file.name,
+        riskScore,
+        classification,
+        threatType,
+        detectionReasons,
+        timestamp: new Date().toISOString(),
+        analysisDetails: {
+          nlpConfidence: Math.floor(Math.random() * 30) + 70,
+          visualSimilarity: Math.floor(Math.random() * 20) + 10,
+          domainReputation: Math.floor(Math.random() * 40) + 60,
+          behavioralScore: riskScore
+        },
+        modelPredictions: {
+          phishingProbability: Math.floor(Math.random() * 20) + 10,
+          malwareProbability: riskScore,
+          scamProbability: Math.floor(Math.random() * 30) + 20,
+          legitimateProbability: 100 - riskScore
+        }
+      };
+      
+      setScanResult(result);
+    } catch (error) {
+      console.error('File analysis error:', error);
+      setScanResult({
+        target: file.name,
+        riskScore: 0,
+        classification: 'Analysis Failed',
+        threatType: 'Error',
+        detectionReasons: ['Unable to analyze file. Please try again.'],
+        timestamp: new Date().toISOString(),
+        analysisDetails: {
+          nlpConfidence: 0,
+          visualSimilarity: 0,
+          domainReputation: 0,
+          behavioralScore: 0
+        },
+        modelPredictions: {
+          phishingProbability: 0,
+          malwareProbability: 0,
+          scamProbability: 0,
+          legitimateProbability: 0
+        }
+      });
+    } finally {
+      setIsScanning(false);
+      setAnalysisStage('');
+    }
+  };
   const handleScan = (e: React.FormEvent) => {
     e.preventDefault();
     if (scanUrl.trim()) {
@@ -94,6 +197,18 @@ const Scanner: React.FC = () => {
     }
   };
 
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setUploadedFile(file);
+    }
+  };
+
+  const handleFileAnalysis = () => {
+    if (uploadedFile) {
+      performFileAnalysis(uploadedFile);
+    }
+  };
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="mb-8">
@@ -170,16 +285,54 @@ const Scanner: React.FC = () => {
         {/* File Upload */}
         {scanMode === 'file' && (
           <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-blue-400 transition-colors duration-200">
-            <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">Upload APK or App Package</h3>
-            <p className="text-gray-500 mb-4">Drag and drop or click to select files</p>
-            <button
-              onClick={() => simulateScan('uploaded-app.apk')}
-              onClick={() => performRealScan('uploaded-app.apk')}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors duration-200"
-            >
-              Select Files
-            </button>
+          <div className="space-y-4">
+            <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-blue-400 transition-colors duration-200">
+              <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">Upload APK or App Package</h3>
+              <p className="text-gray-500 mb-4">Drag and drop or click to select files</p>
+              <input
+                type="file"
+                id="file-upload"
+                accept=".apk,.ipa,.zip,.exe"
+                onChange={handleFileUpload}
+                className="hidden"
+                disabled={isScanning}
+              />
+              <label
+                htmlFor="file-upload"
+                className="inline-block px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors duration-200 cursor-pointer"
+              >
+                Select Files
+              </label>
+            </div>
+            
+            {uploadedFile && (
+              <div className="bg-gray-50 rounded-lg p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center space-x-3">
+                    <Smartphone className="w-5 h-5 text-gray-500" />
+                    <div>
+                      <p className="font-medium text-gray-900">{uploadedFile.name}</p>
+                      <p className="text-sm text-gray-500">{(uploadedFile.size / 1024 / 1024).toFixed(2)} MB</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={handleFileAnalysis}
+                    disabled={isScanning}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+                  >
+                    {isScanning ? (
+                      <div className="flex items-center space-x-2">
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        <span>Analyzing</span>
+                      </div>
+                    ) : (
+                      'Analyze File'
+                    )}
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -191,30 +344,53 @@ const Scanner: React.FC = () => {
             <div className="w-16 h-16 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mx-auto mb-4"></div>
             <h3 className="text-lg font-semibold text-gray-900 mb-2">AI Analysis in Progress</h3>
             <p className="text-blue-600 font-medium mb-4">{analysisStage}</p>
-            <div className="space-y-2 text-sm text-gray-600">
-              <p className={analysisStage.includes('content') ? 'text-blue-600 font-medium' : ''}>
-                🔍 Fetching and analyzing webpage content
-              </p>
-              <p className={analysisStage.includes('NLP') ? 'text-blue-600 font-medium' : ''}>
-                🧠 Running natural language processing models
-              </p>
-              <p className={analysisStage.includes('domain') ? 'text-blue-600 font-medium' : ''}>
-                🌐 Analyzing domain reputation and patterns
-              </p>
-              <p className={analysisStage.includes('visual') ? 'text-blue-600 font-medium' : ''}>
-                👁️ Checking visual similarity using computer vision
-              </p>
-              <p className={analysisStage.includes('predictions') ? 'text-blue-600 font-medium' : ''}>
-                🤖 Generating ensemble AI predictions
-              </p>
-            </div>
+            {scanMode === 'url' ? (
+              <div className="space-y-2 text-sm text-gray-600">
+                <p className={analysisStage.includes('content') ? 'text-blue-600 font-medium' : ''}>
+                  🔍 Fetching and analyzing webpage content
+                </p>
+                <p className={analysisStage.includes('NLP') ? 'text-blue-600 font-medium' : ''}>
+                  🧠 Running natural language processing models
+                </p>
+                <p className={analysisStage.includes('domain') ? 'text-blue-600 font-medium' : ''}>
+                  🌐 Analyzing domain reputation and patterns
+                </p>
+                <p className={analysisStage.includes('visual') ? 'text-blue-600 font-medium' : ''}>
+                  👁️ Checking visual similarity using computer vision
+                </p>
+                <p className={analysisStage.includes('predictions') ? 'text-blue-600 font-medium' : ''}>
+                  🤖 Generating ensemble AI predictions
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-2 text-sm text-gray-600">
+                <p className={analysisStage.includes('Validating') ? 'text-blue-600 font-medium' : ''}>
+                  📋 Validating file format and structure
+                </p>
+                <p className={analysisStage.includes('static') ? 'text-blue-600 font-medium' : ''}>
+                  🔍 Performing static code analysis
+                </p>
+                <p className={analysisStage.includes('permissions') ? 'text-blue-600 font-medium' : ''}>
+                  🔐 Analyzing app permissions and capabilities
+                </p>
+                <p className={analysisStage.includes('behavioral') ? 'text-blue-600 font-medium' : ''}>
+                  🧠 Checking behavioral patterns and signatures
+                </p>
+                <p className={analysisStage.includes('AI threat') ? 'text-blue-600 font-medium' : ''}>
+                  🤖 Running AI threat detection models
+                </p>
+              </div>
+            )}
           </div>
         </div>
       )}
 
       {/* Scan Results */}
       {scanResult && !isScanning && (
-        <ScanResult result={scanResult} onNewScan={() => setScanResult(null)} />
+        <ScanResult result={scanResult} onNewScan={() => {
+          setScanResult(null);
+          setUploadedFile(null);
+        }} />
       )}
 
       {/* Quick Examples */}

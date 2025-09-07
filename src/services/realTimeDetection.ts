@@ -26,7 +26,12 @@ export class RealTimeDetectionService {
     // Simulate real-time threat detection
     this.monitoringInterval = setInterval(() => {
       this.simulateRealTimeDetection();
-    }, 15000); // Check every 15 seconds
+    }, 8000); // Check every 8 seconds for more frequent detection
+    
+    // Generate an initial threat immediately for demo purposes
+    setTimeout(() => {
+      this.simulateRealTimeDetection();
+    }, 2000);
   }
 
   stopMonitoring(): void {
@@ -60,7 +65,11 @@ export class RealTimeDetectionService {
       'google-security-alert.org',
       'facebook-account-suspended.com',
       'netflix-payment-failed.net',
-      'crypto-wallet-recovery.org'
+      'crypto-wallet-recovery.org',
+      'bank-security-alert.com',
+      'instagram-verify-account.net',
+      'twitter-suspended-appeal.org',
+      'linkedin-premium-expired.com'
     ];
 
     const randomUrl = suspiciousUrls[Math.floor(Math.random() * suspiciousUrls.length)];
@@ -69,7 +78,8 @@ export class RealTimeDetectionService {
       // Perform real AI analysis
       const analysis = await fraudDetectionAI.analyzeContent(`https://${randomUrl}`);
       
-      if (analysis.riskScore > 60) {
+      // Lower threshold to generate more threats for demo
+      if (analysis.riskScore > 40) {
         const alert: RealTimeAlert = {
           id: `alert-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
           timestamp: new Date(),
@@ -88,6 +98,7 @@ export class RealTimeDetectionService {
 
         // Notify subscribers
         this.notifySubscribers(alert);
+        console.log('🚨 New threat detected:', randomUrl, 'Risk:', analysis.riskScore);
       }
     } catch (error) {
       console.error('Real-time detection error:', error);

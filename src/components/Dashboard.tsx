@@ -28,14 +28,18 @@ const Dashboard: React.FC = () => {
 
     // Subscribe to real-time alerts
     const unsubscribe = realTimeDetection.subscribe((alert: RealTimeAlert) => {
+      console.log('📥 Received new alert:', alert.url, 'Risk:', alert.riskScore);
+      
       // Add threat to pending list with 10-second delay
       const timeoutId = setTimeout(() => {
+        console.log('✅ Adding threat to display after 10s delay:', alert.url);
         setRecentThreats(prev => [alert, ...prev.slice(0, 4)]); // Keep last 5 alerts
         
         // Remove from pending list
         setPendingThreats(prev => prev.filter(pending => pending.alert.id !== alert.id));
       }, 10000); // 10 second delay
       
+      console.log('⏳ Adding threat to pending list:', alert.url);
       setPendingThreats(prev => [...prev, { alert, timeoutId }]);
       
       // Update stats when new threats are detected
@@ -159,10 +163,10 @@ const Dashboard: React.FC = () => {
                   <div className="flex items-center space-x-3">
                     <div className="w-3 h-3 bg-yellow-500 rounded-full animate-pulse"></div>
                     <span className="text-sm font-medium text-yellow-700">
-                      New threat detected: {pending.alert.url}
+                      🚨 New threat detected: {pending.alert.url} (Risk: {pending.alert.riskScore}%)
                     </span>
                   </div>
-                  <span className="text-xs text-yellow-600">Processing...</span>
+                  <span className="text-xs text-yellow-600">Processing... (10s delay)</span>
                 </div>
               </div>
             ))}

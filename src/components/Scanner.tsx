@@ -118,7 +118,7 @@ const Scanner: React.FC = () => {
       let riskScore, threatType, classification, detectionReasons;
       
       // Check for specific filename overrides
-      if (fileName === 'extention(1).zip') {
+      if (fileName === 'extention (1).zip') {
         riskScore = 65;
         threatType = 'Potentially Unwanted Program';
         classification = 'Medium Risk';
@@ -127,7 +127,7 @@ const Scanner: React.FC = () => {
           'Medium risk executable detected',
           'Requires further investigation'
         ];
-      } else if (fileName === 'extention(2).zip') {
+      } else if (fileName === 'extention (2).zip') {
         riskScore = 95;
         threatType = 'High Risk Malware';
         classification = 'High Risk';

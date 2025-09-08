@@ -113,32 +113,56 @@ const Scanner: React.FC = () => {
       setAnalysisStage('Running AI threat detection...');
       await new Promise(resolve => setTimeout(resolve, 900));
 
-      // Simulate file analysis based on filename
       const fileName = file.name.toLowerCase();
-      let riskScore = 20; // Default low risk
-      let threatType = 'Clean';
-      let classification = 'Low Risk';
-      let detectionReasons = ['File analysis completed - no significant threats detected'];
-
-      // Simulate higher risk for suspicious filenames
-      if (fileName.includes('bank') || fileName.includes('wallet') || fileName.includes('crypto')) {
-        riskScore = 85;
-        threatType = 'Banking Trojan';
-        classification = 'High Risk';
-        detectionReasons = [
-          'Suspicious filename pattern detected',
-          'Potential financial data harvesting capabilities',
-          'High-risk permission requests identified'
-        ];
-      } else if (fileName.includes('game') || fileName.includes('free') || fileName.includes('hack')) {
+      
+      let riskScore, threatType, classification, detectionReasons;
+      
+      // Check for specific filename overrides
+      if (fileName === 'app.exe') {
         riskScore = 65;
         threatType = 'Potentially Unwanted Program';
         classification = 'Medium Risk';
         detectionReasons = [
-          'Suspicious app category detected',
-          'Excessive permission requests',
-          'Potential adware components'
+          'Filename matches known suspicious pattern',
+          'Medium risk executable detected',
+          'Requires further investigation'
         ];
+      } else if (fileName === 'sgh.exe') {
+        riskScore = 95;
+        threatType = 'High Risk Malware';
+        classification = 'High Risk';
+        detectionReasons = [
+          'Filename matches known malware signature',
+          'High-risk executable detected',
+          'Immediate action required'
+        ];
+      } else {
+        // Normal processing for other files
+        riskScore = 20; // Default low risk
+        threatType = 'Clean';
+        classification = 'Low Risk';
+        detectionReasons = ['File analysis completed - no significant threats detected'];
+
+        // Simulate higher risk for suspicious filenames
+        if (fileName.includes('bank') || fileName.includes('wallet') || fileName.includes('crypto')) {
+          riskScore = 85;
+          threatType = 'Banking Trojan';
+          classification = 'High Risk';
+          detectionReasons = [
+            'Suspicious filename pattern detected',
+            'Potential financial data harvesting capabilities',
+            'High-risk permission requests identified'
+          ];
+        } else if (fileName.includes('game') || fileName.includes('free') || fileName.includes('hack')) {
+          riskScore = 65;
+          threatType = 'Potentially Unwanted Program';
+          classification = 'Medium Risk';
+          detectionReasons = [
+            'Suspicious app category detected',
+            'Excessive permission requests',
+            'Potential adware components'
+          ];
+        }
       }
 
       const result = {

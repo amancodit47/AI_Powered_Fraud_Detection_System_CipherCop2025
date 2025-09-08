@@ -18,7 +18,6 @@ const Dashboard: React.FC = () => {
   });
 
   const [recentThreats, setRecentThreats] = useState<RealTimeAlert[]>([]);
-  const [pendingThreats, setPendingThreats] = useState<PendingThreat[]>([]);
   const [isMonitoring, setIsMonitoring] = useState(false);
 
   useEffect(() => {
@@ -28,19 +27,8 @@ const Dashboard: React.FC = () => {
 
     // Subscribe to real-time alerts
     const unsubscribe = realTimeDetection.subscribe((alert: RealTimeAlert) => {
-      console.log('📥 Received new alert:', alert.url, 'Risk:', alert.riskScore);
-      
-      // Add threat to pending list with 10-second delay
-      const timeoutId = setTimeout(() => {
-        console.log('✅ Adding threat to display after 10s delay:', alert.url);
-        setRecentThreats(prev => [alert, ...prev.slice(0, 4)]); // Keep last 5 alerts
-        
-        // Remove from pending list
-        setPendingThreats(prev => prev.filter(pending => pending.alert.id !== alert.id));
-      }, 10000); // 10 second delay
-      
-      console.log('⏳ Adding threat to pending list:', alert.url);
-      setPendingThreats(prev => [...prev, { alert, timeoutId }]);
+      // Add threat directly to the list without delay
+      setRecentThreats(prev => [alert, ...prev.slice(0, 4)]); // Keep last 5 alerts
       
       // Update stats when new threats are detected
       setStats(prev => ({
@@ -65,12 +53,10 @@ const Dashboard: React.FC = () => {
     return () => {
       clearInterval(interval);
       unsubscribe();
-      // Clear all pending timeouts
-      pendingThreats.forEach(pending => clearTimeout(pending.timeoutId));
       realTimeDetection.stopMonitoring();
       setIsMonitoring(false);
     };
-  }, [pendingThreats]);
+  }, []);
 
   const statCards = [
     {
@@ -156,21 +142,6 @@ const Dashboard: React.FC = () => {
               </div>
             </div>
             
-            {/* Pending Threats (with countdown) */}
-            {pendingThreats.map((pending) => (
-              <div key={`pending-${pending.alert.id}`} className="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-3 h-3 bg-yellow-500 rounded-full animate-pulse"></div>
-                    <span className="text-sm font-medium text-yellow-700">
-                      🚨 New threat detected: {pending.alert.url} (Risk: {pending.alert.riskScore}%)
-                    </span>
-                  </div>
-                  <span className="text-xs text-yellow-600">Processing... (10s delay)</span>
-                </div>
-              </div>
-            ))}
-            
             <div className="space-y-4">
               {recentThreats.map((threat) => (
                 <ThreatCard 
@@ -185,7 +156,7 @@ const Dashboard: React.FC = () => {
                   }} 
                 />
               ))}
-              {recentThreats.length === 0 && pendingThreats.length === 0 && (
+              {recentThreats.length === 0 && (
                 <div className="text-center py-8 text-gray-500">
                   <Shield className="w-12 h-12 mx-auto mb-3 opacity-50" />
                   <p>No recent threats detected</p>

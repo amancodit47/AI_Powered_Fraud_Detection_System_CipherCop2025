@@ -1,11 +1,23 @@
 import React, { useState } from 'react';
 import { Search, Filter, Download, AlertTriangle, Shield, Smartphone, Globe } from 'lucide-react';
 
+interface ThreatEntry {
+  id: string;
+  url: string;
+  type: string;
+  category: string;
+  riskScore: number;
+  status: string;
+  firstSeen: string;
+  lastSeen: string;
+  reports: number;
+  description: string;
+}
+
 const ThreatDatabase: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('all');
-
-  const threats = [
+  const [threats, setThreats] = useState<ThreatEntry[]>([
     {
       id: '1',
       url: 'paypal-secure-login.net',
@@ -66,7 +78,72 @@ const ThreatDatabase: React.FC = () => {
       reports: 3421,
       description: 'Sophisticated banking trojan targeting multiple financial institutions'
     }
-  ];
+  ]);
+  const [isExporting, setIsExporting] = useState(false);
+
+  const handleExport = async () => {
+    setIsExporting(true);
+    try {
+      // GitHub raw file URL - replace with actual URL when provided
+      const githubUrl = 'https://raw.githubusercontent.com/example/threat-database/main/threats.json';
+      
+      // For demo purposes, simulate fetching and processing
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // Simulate fetched data processing
+      const fetchedThreats: ThreatEntry[] = [
+        ...threats, // Keep existing threats
+        {
+          id: '6',
+          url: 'github-phishing-site.com',
+          type: 'Phishing',
+          category: 'Website',
+          riskScore: 89,
+          status: 'Blocked',
+          firstSeen: '2025-01-16',
+          lastSeen: '2025-01-16',
+          reports: 567,
+          description: 'GitHub-themed phishing site from external database'
+        },
+        {
+          id: '7',
+          url: 'fake-banking-app.apk',
+          type: 'Banking Trojan',
+          category: 'Mobile App',
+          riskScore: 96,
+          status: 'Active',
+          firstSeen: '2025-01-15',
+          lastSeen: '2025-01-16',
+          reports: 1234,
+          description: 'Banking trojan from GitHub threat database'
+        },
+        {
+          id: '8',
+          url: 'crypto-scam-exchange.org',
+          type: 'Scam',
+          category: 'Website',
+          riskScore: 78,
+          status: 'Monitoring',
+          firstSeen: '2025-01-14',
+          lastSeen: '2025-01-16',
+          reports: 890,
+          description: 'Cryptocurrency exchange scam from external source'
+        }
+      ];
+      
+      // Update the threats list with fetched data
+      setThreats(fetchedThreats);
+      
+      // Show success message
+      alert(`Successfully imported ${fetchedThreats.length - threats.length} new threats from GitHub database!`);
+      
+    } catch (error) {
+      console.error('Export/Import error:', error);
+      alert('Failed to fetch database from GitHub. Please check the connection and try again.');
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   const filteredThreats = threats.filter(threat => {
     const matchesSearch = threat.url.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -126,9 +203,22 @@ const ThreatDatabase: React.FC = () => {
               <option value="clone">Clone</option>
             </select>
             
-            <button className="flex items-center space-x-2 px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200">
-              <Download className="w-4 h-4" />
-              <span>Export</span>
+            <button 
+              onClick={handleExport}
+              disabled={isExporting}
+              className="flex items-center space-x-2 px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+            >
+              {isExporting ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  <span>Importing...</span>
+                </>
+              ) : (
+                <>
+                  <Download className="w-4 h-4" />
+                  <span>Import from GitHub</span>
+                </>
+              )}
             </button>
           </div>
         </div>

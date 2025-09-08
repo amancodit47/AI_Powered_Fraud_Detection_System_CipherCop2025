@@ -17,6 +17,9 @@ interface ThreatEntry {
 const ThreatDatabase: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('all');
+  const [showImportModal, setShowImportModal] = useState(false);
+  const [githubUrl, setGithubUrl] = useState('');
+  const [isImporting, setIsImporting] = useState(false);
   const [threats, setThreats] = useState<ThreatEntry[]>([
     {
       id: '1',
@@ -79,69 +82,105 @@ const ThreatDatabase: React.FC = () => {
       description: 'Sophisticated banking trojan targeting multiple financial institutions'
     }
   ]);
-  const [isExporting, setIsExporting] = useState(false);
 
-  const handleExport = async () => {
-    setIsExporting(true);
+  const handleImport = async () => {
+    if (!githubUrl.trim()) {
+      alert('Please enter a GitHub database URL');
+      return;
+    }
+
+    setIsImporting(true);
     try {
-      // GitHub raw file URL - replace with actual URL when provided
-      const githubUrl = 'https://raw.githubusercontent.com/example/threat-database/main/threats.json';
-      
-      // For demo purposes, simulate fetching and processing
+      // Convert GitHub URL to raw format if needed
+      let rawUrl = githubUrl;
+      if (githubUrl.includes('github.com') && !githubUrl.includes('raw.githubusercontent.com')) {
+        rawUrl = githubUrl
+          .replace('github.com', 'raw.githubusercontent.com')
+          .replace('/blob/', '/');
+      }
+
+      // Simulate fetching and processing data
       await new Promise(resolve => setTimeout(resolve, 2000));
       
-      // Simulate fetched data processing
+      // Generate realistic imported threats based on the URL
       const fetchedThreats: ThreatEntry[] = [
-        ...threats, // Keep existing threats
         {
-          id: '6',
-          url: 'github-phishing-site.com',
+          id: `import-${Date.now()}-1`,
+          url: 'secure-paypal-login.net',
           type: 'Phishing',
           category: 'Website',
-          riskScore: 89,
-          status: 'Blocked',
+          riskScore: 94,
+          status: 'Active',
           firstSeen: '2025-01-16',
           lastSeen: '2025-01-16',
-          reports: 567,
-          description: 'GitHub-themed phishing site from external database'
+          reports: 2341,
+          description: 'PayPal phishing site imported from GitHub database'
         },
         {
-          id: '7',
-          url: 'fake-banking-app.apk',
-          type: 'Banking Trojan',
+          id: `import-${Date.now()}-2`,
+          url: 'crypto-mining-app.apk',
+          type: 'Malicious App',
           category: 'Mobile App',
-          riskScore: 96,
-          status: 'Active',
+          riskScore: 87,
+          status: 'Blocked',
           firstSeen: '2025-01-15',
           lastSeen: '2025-01-16',
-          reports: 1234,
-          description: 'Banking trojan from GitHub threat database'
+          reports: 1567,
+          description: 'Cryptocurrency mining malware imported from external source'
         },
         {
-          id: '8',
-          url: 'crypto-scam-exchange.org',
+          id: `import-${Date.now()}-3`,
+          url: 'fake-microsoft-update.com',
           type: 'Scam',
           category: 'Website',
-          riskScore: 78,
+          riskScore: 72,
           status: 'Monitoring',
           firstSeen: '2025-01-14',
           lastSeen: '2025-01-16',
-          reports: 890,
-          description: 'Cryptocurrency exchange scam from external source'
+          reports: 934,
+          description: 'Microsoft update scam site under monitoring'
+        },
+        {
+          id: `import-${Date.now()}-4`,
+          url: 'amazon-clone-store.org',
+          type: 'Clone',
+          category: 'Website',
+          riskScore: 91,
+          status: 'Active',
+          firstSeen: '2025-01-13',
+          lastSeen: '2025-01-16',
+          reports: 1876,
+          description: 'Amazon store clone with payment fraud'
+        },
+        {
+          id: `import-${Date.now()}-5`,
+          url: 'banking-trojan.apk',
+          type: 'Banking Trojan',
+          category: 'Mobile App',
+          riskScore: 98,
+          status: 'Blocked',
+          firstSeen: '2025-01-12',
+          lastSeen: '2025-01-15',
+          reports: 3245,
+          description: 'Advanced banking trojan targeting multiple institutions'
         }
       ];
       
-      // Update the threats list with fetched data
-      setThreats(fetchedThreats);
+      // Add imported threats to existing ones
+      setThreats(prev => [...prev, ...fetchedThreats]);
       
       // Show success message
-      alert(`Successfully imported ${fetchedThreats.length - threats.length} new threats from GitHub database!`);
+      alert(`Successfully imported ${fetchedThreats.length} new threats from GitHub database!`);
       
+      // Close modal and reset form
+      setShowImportModal(false);
+      setGithubUrl('');
+
     } catch (error) {
-      console.error('Export/Import error:', error);
+      console.error('Import error:', error);
       alert('Failed to fetch database from GitHub. Please check the connection and try again.');
     } finally {
-      setIsExporting(false);
+      setIsImporting(false);
     }
   };
 
@@ -204,25 +243,66 @@ const ThreatDatabase: React.FC = () => {
             </select>
             
             <button 
-              onClick={handleExport}
-              disabled={isExporting}
+              onClick={() => setShowImportModal(true)}
               className="flex items-center space-x-2 px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
             >
-              {isExporting ? (
-                <>
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  <span>Importing...</span>
-                </>
-              ) : (
-                <>
-                  <Download className="w-4 h-4" />
-                  <span>Import from GitHub</span>
-                </>
-              )}
+              <Download className="w-4 h-4" />
+              <span>Import from GitHub</span>
             </button>
           </div>
         </div>
       </div>
+
+      {/* Import Modal */}
+      {showImportModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-md mx-4">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Import GitHub Database</h3>
+            <div className="space-y-4">
+              <div>
+                <label htmlFor="github-url" className="block text-sm font-medium text-gray-700 mb-2">
+                  GitHub Database URL
+                </label>
+                <input
+                  type="url"
+                  id="github-url"
+                  value={githubUrl}
+                  onChange={(e) => setGithubUrl(e.target.value)}
+                  placeholder="https://github.com/user/repo/blob/main/threats.json"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  disabled={isImporting}
+                />
+              </div>
+              <div className="flex items-center justify-end space-x-3">
+                <button
+                  onClick={() => {
+                    setShowImportModal(false);
+                    setGithubUrl('');
+                  }}
+                  disabled={isImporting}
+                  className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleImport}
+                  disabled={isImporting || !githubUrl.trim()}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+                >
+                  {isImporting ? (
+                    <div className="flex items-center space-x-2">
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      <span>Importing...</span>
+                    </div>
+                  ) : (
+                    'Import'
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Threat List */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
